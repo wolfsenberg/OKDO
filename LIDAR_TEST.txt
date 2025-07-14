@@ -1,0 +1,39 @@
+#include <SoftwareSerial.h>
+
+// Create software serial on pins 10 (RX), 11 (TX)
+SoftwareSerial lidarSerial(10, 11);
+
+void setup() {
+  Serial.begin(9600);           // Serial Monitor baud rate
+  lidarSerial.begin(115200);    // Lidar module baud rate
+}
+
+void loop() {
+  // Check if at least 9 bytes are available (full data frame size)
+  if (lidarSerial.available() >= 9) {
+    // Check for start bytes 0x59 0x59
+    if (lidarSerial.read() == 0x59 && lidarSerial.read() == 0x59) {
+      
+      // Read the next 7 bytes into an array
+      uint8_t data[7];
+      for (int i = 0; i < 7; i++) {
+        data[i] = lidarSerial.read();
+      }
+      
+      // Parse distance
+      int distance = data[0] | (data[1] << 8);
+      
+      // Optional: Parse signal strength if needed
+      int strength = data[2] | (data[3] << 8);
+      
+      // Print to Serial Monitor
+      Serial.print("Distance: ");
+      Serial.print(distance);
+      Serial.println(" cm");
+
+      // Optional: print strength
+      // Serial.print("Strength: ");
+      // Serial.println(strength);
+    }
+  }
+}
